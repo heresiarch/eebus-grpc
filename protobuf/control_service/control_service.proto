@@ -16,6 +16,9 @@ service ControlService {
     // Stops the EEBus service
     rpc StopService (EmptyRequest) returns (EmptyResponse) {}
 
+    // Reset the EEBus service
+    rpc ResetService (EmptyRequest) returns (EmptyResponse) {}
+
     // Set Config for the EEBus service
     // Each parameter is optional. If a parameter is not set, the current value is used.
     rpc SetConfig (SetConfigRequest) returns (EmptyResponse) {}

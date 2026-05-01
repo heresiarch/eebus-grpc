@@ -119,6 +119,15 @@ func (h *Server) StopService(_ context.Context, _ *control_service.EmptyRequest)
 	return &control_service.EmptyResponse{}, nil
 }
 
+func (h *Server) ResetService(_ context.Context, _ *control_service.EmptyRequest) (*control_service.EmptyResponse, error) {
+	h.Debug("Received reset command")
+	h.eebusService.Shutdown()
+
+	h.stateMachine = NewStateMachine()
+
+	return &control_service.EmptyResponse{}, nil
+}
+
 func (h *Server) SetConfig(_ context.Context, req *control_service.SetConfigRequest) (*control_service.EmptyResponse, error) {
 	h.Debug("Received set config command")
 	if !h.stateMachine.Is(StateSetup) {

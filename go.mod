@@ -1,6 +1,6 @@
 module github.com/enbility/eebus-grpc
 
-go 1.23
+go 1.24.1
 
 require (
 	github.com/enbility/eebus-go v0.7.1-0.20241122120159-59e7016a7018
