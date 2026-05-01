@@ -1,6 +1,6 @@
 module github.com/enbility/eebus-grpc
 
-go 1.23
+go 1.24.1
 
 require (
 	github.com/enbility/eebus-go v0.7.1-0.20241122120159-59e7016a7018
@@ -8,7 +8,7 @@ require (
 	github.com/enbility/spine-go v0.7.1-0.20241118145803-0589320ceced
 	github.com/looplab/fsm v1.0.2
 	google.golang.org/grpc v1.68.0
-	google.golang.org/protobuf v1.35.2
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
