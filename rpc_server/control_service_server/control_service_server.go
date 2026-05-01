@@ -381,9 +381,12 @@ func (h *Server) Start(port *int) (int, error) {
 	h.grpcServer = grpc.NewServer()
 	control_service.RegisterControlServiceServer(h.grpcServer, h)
 	err = h.grpcServer.Serve(lis)
-	if err != nil {
-		return -1, fmt.Errorf("failed to serve: %v", err)
-	}
+
+	go func() {
+		if err := h.grpcServer.Serve(lis); err != nil {
+			fmt.Errorf("failed to serve: %v", err)
+		}
+	}()
 
 	return *port, nil
 }
