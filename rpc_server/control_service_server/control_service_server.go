@@ -24,6 +24,8 @@ import (
 	"github.com/enbility/spine-go/spine"
 	"github.com/looplab/fsm"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/health/grpc_health_v1"
 
 	// Use cases - CEM
 
@@ -68,10 +70,11 @@ func (h *useCaseEntryType) Equals(other *useCaseEntryType) bool {
 type Server struct {
 	control_service.UnsafeControlServiceServer
 	rpc_server.RPCServer
-	eebusService *eebus_service.Service
-	stateMachine *fsm.FSM
-	grpcServer   *grpc.Server
-	certificate  *tls.Certificate
+	eebusService     *eebus_service.Service
+	stateMachine     *fsm.FSM
+	grpcServer       *grpc.Server
+	grpcHealthServer *health.Server
+	certificate      *tls.Certificate
 
 	useCaseRegistry []useCaseEntryType
 
@@ -374,13 +377,17 @@ func (h *Server) Start(port *int) (int, error) {
 	if h.grpcServer != nil {
 		return -1, fmt.Errorf("grpc server is already running")
 	}
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
 		return -1, fmt.Errorf("failed to listen: %v", err)
 	}
 	h.grpcServer = grpc.NewServer()
 	control_service.RegisterControlServiceServer(h.grpcServer, h)
-	err = h.grpcServer.Serve(lis)
+
+	// Enbable health server
+	h.grpcHealthServer = health.NewServer()
+	grpc_health_v1.RegisterHealthServer(h.grpcServer, h.grpcHealthServer)
+	h.grpcHealthServer.SetServingStatus("", grpc_health_v1.HealthCheckResponse_SERVING)
 
 	go func() {
 		if err := h.grpcServer.Serve(lis); err != nil {
@@ -394,6 +401,10 @@ func (h *Server) Start(port *int) (int, error) {
 func (h *Server) Stop() error {
 	if h.grpcServer == nil {
 		return fmt.Errorf("grpc server is not running")
+	}
+	if h.grpcHealthServer != nil {
+		h.grpcHealthServer.Shutdown()
+		h.grpcHealthServer = nil
 	}
 	h.grpcServer.Stop()
 	h.grpcServer = nil
