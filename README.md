@@ -54,3 +54,43 @@ Contains utility functions.
 
 - [Create Certificate Script](cmd/create_cert/README.md)
 - [Dummy CEM](cmd/dummy_cem/README.md)
+
+
+## Build image
+
+```
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  -t dein-registry/eebus-grpc:latest \
+  --push .
+```
+
+local testing:
+
+```
+docker buildx build --platform linux/amd64 -t eebus-grpc:amd64 --load .
+docker buildx build --platform linux/arm64 -t eebus-grpc:arm64 --load .
+```
+
+## Run commands
+
+Genertate cers:
+
+```
+docker run --rm -it \
+  -v "$PWD/cert:/certs" \
+  --entrypoint create-cert \
+  eebus-grpc /certs myhems
+```
+
+Run grpc server
+
+```
+docker run --rm -it \
+  -p 50051:50051 \
+  -v "$PWD/cert:/certs" \
+  eebus-grpc \
+  -certificate-path /certs/myhems_cert \
+  -private-key-path /certs/myhems_key \
+  -port 50051
+```
