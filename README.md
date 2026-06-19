@@ -73,24 +73,18 @@ docker buildx build --platform linux/arm64 -t eebus-grpc:arm64 --load .
 ```
 
 ## Run commands
-
-Genertate cers:
-
+Run grpc server (certs will be created automatically in the specified certs directory if not exist!)
 ```
+mkdir certs
 docker run --rm -it \
-  -v "$PWD/cert:/certs" \
-  --entrypoint create-cert \
-  eebus-grpc /certs myhems
-```
-
-Run grpc server
-
-```
-docker run --rm -it \
+  --network=host \
   -p 50051:50051 \
-  -v "$PWD/cert:/certs" \
-  eebus-grpc \
+  -v "$PWD/certs:/certs" \
+  eebus-grpc:amd64 \
   -certificate-path /certs/myhems_cert \
   -private-key-path /certs/myhems_key \
-  -port 50051
+  -port 50051 -ipv4Addr "0.0.0.0"
 ```
+## Docker Compose
+An example with 
+

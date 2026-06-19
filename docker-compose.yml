@@ -1,0 +1,62 @@
+services:
+  eebus-grpc:
+    image: eebus-grpc:amd64
+    container_name: eebus-grpc
+    restart: unless-stopped
+    environment:
+      # This is the GRPC Server bind address in the docker bridge network 
+      IPV4_ADDR: 172.30.0.10
+    networks:
+      internal:
+        ipv4_address: 172.30.0.10
+      lan:
+        ipv4_address: 192.168.178.220
+    # adopt to your UID/GID
+    user: 1000:1000
+    
+    volumes:
+      - ./certs:/certs
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - |
+          grpc-health-probe -addr=$${IPV4_ADDR}:50051 || kill -TERM 1
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+  iobroker:
+    container_name: iobroker
+    image: buanet/iobroker
+    hostname: iobroker
+    restart: always
+    networks:
+      internal:
+        ipv4_address: 172.30.0.11
+      lan:
+        ipv4_address: 192.168.178.221
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./iobrokerdata:/opt/iobroker
+    environment:
+      - TZ=Europe/Berlin
+networks:
+  internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+          gateway: 172.30.0.1
+          ip_range: 172.30.0.0/24
+
+  lan:
+    driver: macvlan
+    driver_opts:
+      parent: enp3s0
+    ipam:
+      config:
+        - subnet: 192.168.178.0/24
+          gateway: 192.168.178.1
+          ip_range: 192.168.178.220/30
