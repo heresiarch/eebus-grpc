@@ -58,7 +58,7 @@ Contains utility functions.
 
 ## Build image
 
-```
+```bash
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
   -t dein-registry/eebus-grpc:latest \
@@ -67,14 +67,14 @@ docker buildx build \
 
 local testing:
 
-```
+```bash
 docker buildx build --platform linux/amd64 -t eebus-grpc:amd64 --load .
 docker buildx build --platform linux/arm64 -t eebus-grpc:arm64 --load .
 ```
 
 ## Run commands
 Run grpc server (certs will be created automatically in the specified certs directory if not exist!)
-```
+```bash
 mkdir certs
 docker run --rm -it \
   --network=host \
@@ -86,5 +86,14 @@ docker run --rm -it \
   -port 50051 -ipv4Addr "0.0.0.0"
 ```
 ## Docker Compose
-An example with 
+An example [docker-compose.yml](docker-compose.yml) file is provided. You need to adopt the values in that file to your needs. It shows how to use the eebus-grpc container with another iobroker container. Both containers are using Docker Macvlan driver to be able to communicate directly with other devices in the LAN. The Docker Bridge network is used to for the GRPC communication between the containers.
+
+``` bash
+mkdir -p certs
+mkdir -p iobroker
+docker-compose up -d
+```
+
+
+
 
