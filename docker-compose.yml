@@ -6,6 +6,9 @@ services:
     environment:
       # This is the GRPC Server bind address in the docker bridge network 
       IPV4_ADDR: 172.30.0.10
+      CRT_PATH: "/certs/myhems_cert"
+      KEY_PATH: "/certs/myhems_key"
+      GRPC_PORT: 50051
     networks:
       internal:
         ipv4_address: 172.30.0.10
@@ -18,14 +21,14 @@ services:
       - ./certs:/certs
 
     healthcheck:
-      test:
-        - CMD-SHELL
-        - |
-          grpc-health-probe -addr=$${IPV4_ADDR}:50051 || kill -TERM 1
-      interval: 30s
-      timeout: 5s
+      # If UID/GID mapping has changed with compose user directive, UID app from container will not with pkill
+      # UID in this example case would be 1000
+      test: ["CMD-SHELL", "grpc-health-probe -addr=$${IPV4_ADDR}:50051 || pkill -u $$(id -u)"]
+      interval: 60s
+      timeout: 10s
       retries: 3
       start_period: 10s
+  
   iobroker:
     container_name: iobroker
     image: buanet/iobroker
